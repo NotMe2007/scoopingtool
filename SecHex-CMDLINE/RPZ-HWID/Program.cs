@@ -790,7 +790,7 @@ namespace HWID_Changer
 
         static void Main()
         {
-            Console.Title = "SecHex | V1.3 | Open Source | github/SecHex";
+            Console.Title = "SecHex | V1.3 | Open Source | discord.gg/ZVHjadv4AG";
             Console.ForegroundColor
           = ConsoleColor.Magenta;
             Console.Clear();
@@ -800,7 +800,7 @@ namespace HWID_Changer
             Console.WriteLine("╚════██║██╔═══╝ ██║   ██║██║   ██║██╔══╝    ╚██╔╝        ");
             Console.WriteLine("███████║██║     ╚██████╔╝╚██████╔╝██║        ██║         ");
             Console.WriteLine("╚══════╝╚═╝      ╚═════╝  ╚═════╝ ╚═╝        ╚═╝         ");
-            Console.WriteLine("https://github.com/SecHex                                ");
+            Console.WriteLine("https://discord.gg/ZVHjadv4AG                                ");
             Console.WriteLine("                                            ");
             Console.WriteLine("[1] Spoof HWID                       [7] Spoof PC Name            ");
             Console.WriteLine("[2] Spoof GUID                       [8] Spoof Installation ID    ");
