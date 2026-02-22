@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>SecHex_GUI</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -10,12 +10,12 @@
     <Company>SecHex</Company>
     <Product>Spoofy</Product>
     <Authors>Spoofy</Authors>
-    <ApplicationIcon>settings.ico</ApplicationIcon>
+    <ApplicationIcon>sechex.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="settings.ico" />
+    <Content Include="sechex.ico" />
   </ItemGroup>
 
   <ItemGroup>

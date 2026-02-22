@@ -1,9 +1,13 @@
-﻿################################################################################
-# Diese .gitignore-Datei wurde von Microsoft(R) Visual Studio automatisch erstellt.
-################################################################################
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-/.vs
-/SecHex-GUI/.vs
-build.ps1
-*.exe
-*.txt
+# Build
+bin/
+obj/
+
+# Logs
+*.log

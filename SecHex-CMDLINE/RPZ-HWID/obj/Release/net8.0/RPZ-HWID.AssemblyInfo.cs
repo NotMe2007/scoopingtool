@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RPZ-HWID")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+314781d9bc956bbbcfd09c772eea81d0e0a54ac4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+00c5893b75d306e52fdf366402b15e6c206af94b")]
 [assembly: System.Reflection.AssemblyProductAttribute("RPZ-HWID")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RPZ-HWID")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
