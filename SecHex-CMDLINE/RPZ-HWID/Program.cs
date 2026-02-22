@@ -349,49 +349,6 @@ namespace HWID_Changer
         }
 
 
-        public static void DeleteRobloxCache()
-        {
-            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string roamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            
-            string[] robloxPaths = new string[]
-            {
-                Path.Combine(localAppData, "Roblox", "cache"),
-                Path.Combine(localAppData, "Roblox", "logs"),
-                Path.Combine(localAppData, "Roblox", "state"),
-                Path.Combine(localAppData, "Roblox", "trackerdata"),
-                Path.Combine(localAppData, "Roblox", "http_cache"),
-                Path.Combine(localAppData, "Roblox", "versions"),
-                Path.Combine(roamingAppData, "Roblox")
-            };
-
-            foreach (string path in robloxPaths)
-            {
-                try
-                {
-                    if (Directory.Exists(path))
-                    {
-                        DirectoryInfo di = new DirectoryInfo(path);
-                        foreach (FileInfo file in di.GetFiles())
-                        {
-                            file.Delete();
-                        }
-                        foreach (DirectoryInfo dir in di.GetDirectories())
-                        {
-                            dir.Delete(true);
-                        }
-                        Console.WriteLine($"\n[+] Deleted: {path}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"\n[X] Error deleting {path}: {ex.Message}");
-                }
-            }
-            
-            Console.WriteLine("\n[+] Roblox cache and tracking data cleaned successfully!");
-        }
-
 
         public static bool SpoofMAC() //SpoofMacREAL
 
@@ -721,9 +678,9 @@ namespace HWID_Changer
 
 
                 case "11":
-                    // Delete Roblox cache and tracking data
-                    DeleteRobloxCache();
-                    ClearConsoleAfterDelay();
+                    // Check registry
+                    CheckRegistryKeys();
+                    ClearConsoleAfterDelay2();
                     Menu();
                     break;
 
@@ -795,15 +752,18 @@ namespace HWID_Changer
             Console.WriteLine("╚════██║██╔═══╝ ██║   ██║██║   ██║██╔══╝    ╚██╔╝        ");
             Console.WriteLine("███████║██║     ╚██████╔╝╚██████╔╝██║        ██║         ");
             Console.WriteLine("╚══════╝╚═╝      ╚═════╝  ╚═════╝ ╚═╝        ╚═╝         ");
-            Console.WriteLine("https://discord.gg/ZVHjadv4AG                                ");
+            Console.WriteLine("https://github.com/SecHex                                ");
             Console.WriteLine("                                            ");
             Console.WriteLine("[1] Spoof HWID                       [7] Spoof PC Name            ");
             Console.WriteLine("[2] Spoof GUID                       [8] Spoof Installation ID    ");
             Console.WriteLine("[3] Spoof MAC ID                     [9] Spoof EFI                ");
             Console.WriteLine("[4] Delete UBI Cache                 [10] Spoof SMBIOS            ");
-            Console.WriteLine("[5] Delete Valorant Cache            [11] Delete Roblox Cache     ");
-            Console.WriteLine("[6] Spoof GPU ID                                                  ");
-            Console.WriteLine("[12] Get System informations        [13] Spoof all               ");
+            Console.WriteLine("[5] Delete Valorant Cache                   ");
+            Console.WriteLine("[6] Spoof GPU ID                            ");
+            Console.WriteLine("                                            ");
+            Console.WriteLine("[11] Check Registry Paths                   ");
+            Console.WriteLine("[12] Get System informations                ");
+            Console.WriteLine("[13] Spoof all                              ");
             Console.WriteLine("[exit] Exit                                 ");
             Console.WriteLine("  ");
             Console.ForegroundColor
