@@ -349,6 +349,54 @@ namespace HWID_Changer
         }
 
 
+        public static void DeleteRobloxCache()
+        {
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string roamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            string[] robloxPaths = new string[]
+            {
+                Path.Combine(localAppData, "Roblox", "logs"),
+                Path.Combine(localAppData, "Roblox", "LocalStorage"),
+                Path.Combine(localAppData, "Roblox", "Versions"),
+                Path.Combine(localAppData, "Roblox", "versions"),
+                Path.Combine(localAppData, "Roblox", "cache"),
+                Path.Combine(localAppData, "Roblox", "state"),
+                Path.Combine(localAppData, "Roblox", "trackerdata"),
+                Path.Combine(localAppData, "Roblox", "http_cache"),
+                Path.Combine(roamingAppData, "Roblox")
+            };
+
+            int deletedCount = 0;
+
+            foreach (string path in robloxPaths)
+            {
+                try
+                {
+                    if (Directory.Exists(path))
+                    {
+                        Directory.Delete(path, true);
+                        deletedCount++;
+                        Console.WriteLine($"\n[+] Deleted: {path}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"\n[X] Error deleting {path}: {ex.Message}");
+                }
+            }
+
+            if (deletedCount > 0)
+            {
+                Console.WriteLine($"\n[+] Roblox cache data cleaned ({deletedCount} locations).\n");
+            }
+            else
+            {
+                Console.WriteLine("\n[!] No Roblox cache folders found.\n");
+            }
+        }
+
+
 
         public static bool SpoofMAC() //SpoofMacREAL
 
@@ -678,9 +726,9 @@ namespace HWID_Changer
 
 
                 case "11":
-                    // Check registry
-                    CheckRegistryKeys();
-                    ClearConsoleAfterDelay2();
+                    // Delete Roblox cache
+                    DeleteRobloxCache();
+                    ClearConsoleAfterDelay();
                     Menu();
                     break;
 
@@ -758,10 +806,9 @@ namespace HWID_Changer
             Console.WriteLine("[2] Spoof GUID                       [8] Spoof Installation ID    ");
             Console.WriteLine("[3] Spoof MAC ID                     [9] Spoof EFI                ");
             Console.WriteLine("[4] Delete UBI Cache                 [10] Spoof SMBIOS            ");
-            Console.WriteLine("[5] Delete Valorant Cache                   ");
+            Console.WriteLine("[5] Delete Valorant Cache            [11] Delete Roblox Cache     ");
             Console.WriteLine("[6] Spoof GPU ID                            ");
             Console.WriteLine("                                            ");
-            Console.WriteLine("[11] Check Registry Paths                   ");
             Console.WriteLine("[12] Get System informations                ");
             Console.WriteLine("[13] Spoof all                              ");
             Console.WriteLine("[exit] Exit                                 ");
